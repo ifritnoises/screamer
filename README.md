@@ -50,9 +50,9 @@ screamer active --help
 sudo screamer active 192.168.0.0/16 -m icmp-echo --max-ttl 4 --out-dot graph.dot --out-subnets subnets.txt
 ```
 
-![](demo\screamer_active_demo.gif)
+![](demo/screamer_active_demo.gif)
 
-![](demo\screamer_graph_demo.png)
+![](demo/screamer_graph_demo.png)
 
 
 # Passive Reconnaissance
@@ -76,14 +76,14 @@ screamer passive --help
 sudo screamer passive --iface eth0 --timeout 30
 ```
 
-![](demo\screamer_passive_demo.gif)
+![](demo/screamer_passive_demo.gif)
 
 # Reflections
 
 The TTL tracing method is useful for initial reconnaissance of an unknown network, but this method has a number of disadvantages:
 
 1. **Predicting:** The approach is based on the assumption that, in every /24 subnet, the gateway is very likely to be assigned the address `.1` or `.254`. This practice is common in enterprise networks, but it is not mandatory. This can be partially mitigated by extending the list of queried positions using the `--positions` flag; but this requires an iterative approach with a progressively expanded sample
-2. **Routers with multiple interfaces: **The tool displays only the responding IP addresses when creating the graph. The router sends an ICMP Time Exceeded packet from the address through which the response is returned to the sender, and this address is determined by reverse routing for that specific traffic flow. As a result, the same physical router may look like two or more nodes in the graph
+2. **Routers with multiple interfaces:** The tool displays only the responding IP addresses when creating the graph. The router sends an ICMP Time Exceeded packet from the address through which the response is returned to the sender, and this address is determined by reverse routing for that specific traffic flow. As a result, the same physical router may look like two or more nodes in the graph
 3. **Interfering Firewall:** Routers can purposely hide from traceroute by using a rule that increases the TTL of incoming packets. In this configuration, the router does not return an ICMP Time Exceeded message, so artifacts may appear in the topology graph: an intermediate host may appear to be directly reachable
 4. **Tracing in tunnels:** The sending method ([sr1](https://scapy.readthedocs.io/en/latest/usage.html#send-and-receive-packets-sr)) used by Scapy relies on an L2 socket, which does not work correctly on tunnel or header-less interfaces (e.g `tun`), on these responses are not received. 
    Use `--tunnel` as a solution. This flag uses [L3RawSocket](), a single shared socket for all threads. A raw socket receives all incoming IP packets without demultiplexing them into streams; as a result, during multithreaded probes, threads reading from it at the same time may intercept each other’s responses. This corrupts the graph: nodes randomly jump between hops from one run to the next. I fixed this by giving each thread its own socket via `threading.local()`
