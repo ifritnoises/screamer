@@ -46,10 +46,6 @@ screamer active --help
 
 ## Demo
 
-```bash
-sudo screamer active 192.168.0.0/16 -m icmp-echo --max-ttl 4 --out-dot graph.dot --out-subnets subnets.txt
-```
-
 ![](demo/screamer_active_demo.gif)
 
 ![](demo/screamer_graph_demo.png)
@@ -71,10 +67,6 @@ screamer passive --help
 | `--timeout` | Traffic sniffing timeout (auto-writes pcap if `--output` was not specified) |
 
 ## Demo
-
-```bash
-sudo screamer passive --iface eth0 --timeout 30
-```
 
 ![](demo/screamer_passive_demo.gif)
 

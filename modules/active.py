@@ -125,10 +125,10 @@ def write_dot_graph(filename):
     with open(filename, "w") as f:
         f.write("digraph hops {\n")
         f.write("  rankdir=LR;\n")
-        f.write('  bgcolor="black";\n')
-        f.write('  node [shape=box, style=rounded, fontname="monospace", color=white, fontcolor=white];\n')
-        f.write('  edge [color=white];\n')
-        f.write('  "Screamer" [shape=ellipse, style=filled, fillcolor=white, fontcolor=black];\n')
+        f.write('  bgcolor="white";\n')
+        f.write('  node [shape=box, style=rounded, fontname="monospace", color=black, fontcolor=black];\n')
+        f.write('  edge [color=black];\n')
+        f.write('  "Screamer" [shape=ellipse, style=filled, fillcolor=black, fontcolor=white];\n')
         for edge_from, edge_to in sorted(edges):
             f.write('  "' + edge_from + '" -> "' + edge_to + '";\n')
         f.write("}\n")
