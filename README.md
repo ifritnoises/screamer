@@ -46,7 +46,7 @@ screamer active --help
 
 ## Demo
 
-![](demo/screamer_active_demo.gif)
+![](demo/screamer_active_icmp_echo.gif)
 
 ![](demo/screamer_graph_demo.png)
 
