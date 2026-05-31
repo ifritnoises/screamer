@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import threading
+from threading import Lock
 from scapy.all import IP, ICMP, TCP, UDP, sr1, RandShort
 from colorama import Fore, Style
 from scapy.supersocket import L3RawSocket
@@ -20,6 +21,9 @@ USE_L3_RAW = False
 # each L3RawSocket at the thread 
 raw_sockets = threading.local()
 
+# to count the time of the probe
+sent_lock = Lock()
+sent = 0
 
 def send_recv(packet):
     if not USE_L3_RAW:
@@ -93,11 +97,14 @@ probes = {
 
 # Send probes and build the traces (with .setdefault)
 def send_probe(target_ip, ttl, method_name, dport):
+    global sent
     probe_fn = probes[method_name]
     if method_name in ("tcp", "udp") and dport is not None:
         responder_ip, reached = probe_fn(target_ip, ttl, dport)
     else:
         responder_ip, reached = probe_fn(target_ip, ttl)
+    with sent_lock:
+        sent += 1
     if responder_ip is None:
         return
     with traces_lock:
@@ -108,7 +115,6 @@ def send_probe(target_ip, ttl, method_name, dport):
         if reached:
             done.add(target_ip)
             
-
 # Build the graph
 def write_dot_graph(filename):
     # Build a DOT topology graph from collected traces

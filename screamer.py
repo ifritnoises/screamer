@@ -9,7 +9,7 @@ from scapy.all import conf
 from colorama import Fore, Style, init
 from modules import passive
 from modules import active
-
+import time
 
 # mute scapy
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -26,7 +26,7 @@ def banner():
   ╲ `──.  ___ _ __ ___  __ _ _ __ ___   ___ _ __ 
    `──. ╲╱ __│ '__╱ _ ╲╱ _` │ '_ ` _ ╲ ╱ _ ╲ '__│
   ╱╲__╱ ╱ (__│ │ │  __╱ (_│ │ │ │ │ │ │  __╱ │   
-  ╲____╱ ╲___│_│  ╲___│╲__,_│_│ │_│ │_│╲___│_│  v0.1.0       
+  ╲____╱ ╲___│_│  ╲___│╲__,_│_│ │_│ │_│╲___│_│  v0.1.1
 """
     print(ascii_art)
     print("  Hybrid Network Tracer")
@@ -61,6 +61,8 @@ def expand_targets(cidr, host_positions):
 # active mode
 def run_active(args):
     require_root()
+    # counting 
+    active.sent = 0
     # --tunnel
     if args.tunnel:
         active.USE_L3_RAW = True
@@ -77,6 +79,7 @@ def run_active(args):
     print(Fore.WHITE + "[*] Max TTL: " + str(args.max_ttl))
     print(Fore.WHITE + "[*] Threads: " + str(args.threads))
 
+    t0 = time.perf_counter()
     # multithreaded probes (after pressing CTRL+C, it will wait for the thread to finish and save the .dot file)
     try:
         for ttl in range(1, args.max_ttl + 1):
@@ -95,8 +98,12 @@ def run_active(args):
         print()
         print(Fore.YELLOW + "[!] Interrupted, exiting...")
 
+    elapsed = time.perf_counter() - t0
+
     print()
     print("[*] Unique hops found: " + str(len(active.discovered_hops)))
+    print("[*] Probes sent: " + str(active.sent) + " across " + str(len(targets)) + " targets")
+    print("[*] Elapsed: " + str(round(elapsed, 1)) + "s " + "(threads=" + str(args.threads) + ", method=" + args.method + ", max_ttl=" + str(args.max_ttl) + ")\n")
 
     # generate .dot graph
     if args.out_dot:
