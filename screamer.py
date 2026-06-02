@@ -29,8 +29,9 @@ def banner():
   ╲____╱ ╲___│_│  ╲___│╲__,_│_│ │_│ │_│╲___│_│  v0.1.1
 """
     print(ascii_art)
-    print("  Hybrid Network Tracer")
-    print("  Made by: Ifrit <contact@ifritnoises.org>\n")
+    print("  Fast Subnet Discovery")
+    print("  Made by: Ifrit")
+    print("  Contact: contact@ifritnoises.org\n")
     
 
 def require_root():
