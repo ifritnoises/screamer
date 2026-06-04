@@ -48,6 +48,8 @@ screamer active --help
 
 ![](demo/screamer_active_icmp_echo.gif)
 
+## Graph
+
 ![](demo/screamer_graph_demo.png)
 
 
