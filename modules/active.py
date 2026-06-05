@@ -16,8 +16,10 @@ traces_lock = threading.Lock()
 # for packets which reached dst
 done = set()
 
-# from screamer.py by --tunnel flag
+# from screamer.py (--tunnel flag)
 USE_L3_RAW = False
+TUNNEL_SRC = None
+
 # each L3RawSocket at the thread 
 raw_sockets = threading.local()
 
@@ -25,7 +27,11 @@ raw_sockets = threading.local()
 sent_lock = Lock()
 sent = 0
 
+
 def send_recv(packet):
+    # On dev-routes scapy won't pick a source itself, so set it explicitly
+    if TUNNEL_SRC and packet.haslayer(IP):
+        packet[IP].src = TUNNEL_SRC
     if not USE_L3_RAW:
         return sr1(packet, timeout=1, verbose=0)
     sock = getattr(raw_sockets, "sock", None)

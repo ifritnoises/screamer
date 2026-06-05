@@ -5,11 +5,12 @@ import logging
 import ipaddress
 import os
 import sys
+import time
 from scapy.all import conf
 from colorama import Fore, Style, init
 from modules import passive
 from modules import active
-import time
+
 
 # mute scapy
 logging.getLogger("scapy.runtime").setLevel(logging.ERROR)
@@ -26,7 +27,7 @@ def banner():
   ╲ `──.  ___ _ __ ___  __ _ _ __ ___   ___ _ __ 
    `──. ╲╱ __│ '__╱ _ ╲╱ _` │ '_ ` _ ╲ ╱ _ ╲ '__│
   ╱╲__╱ ╱ (__│ │ │  __╱ (_│ │ │ │ │ │ │  __╱ │   
-  ╲____╱ ╲___│_│  ╲___│╲__,_│_│ │_│ │_│╲___│_│  v0.1.1
+  ╲____╱ ╲___│_│  ╲___│╲__,_│_│ │_│ │_│╲___│_│  v0.2.0
 """
     print(ascii_art)
     print("  Fast Subnet Discovery")
@@ -66,7 +67,18 @@ def run_active(args):
     active.sent = 0
     # --tunnel
     if args.tunnel:
+        from scapy.all import conf, get_if_addr
+        # resync so scapy sees dev-routes added after import (dynamic tunnels)
+        conf.route.resync()
         active.USE_L3_RAW = True
+        if args.tunnel_iface:
+            # dev-routed p2p links need an explicit source, pull it from the iface
+            src = get_if_addr(args.tunnel_iface)
+            if not src or src == "0.0.0.0":
+                raise SystemExit(Fore.RED + "[!] Could not resolve source IP for " + args.tunnel_iface)
+            active.TUNNEL_SRC = src
+            print(Fore.WHITE + "[*] Tunnel Interface: " + args.tunnel_iface + " (Source IP: " + src + ")\n")
+      
     from concurrent.futures import ThreadPoolExecutor, as_completed
     if args.method in ("tcp", "udp") and args.dport is None:
         raise SystemExit("--dport is required for method " + args.method)
@@ -75,8 +87,8 @@ def run_active(args):
     targets = expand_targets(args.range, host_positions)
 
     print(Style.BRIGHT + "  [ ACTIVE MODE ]\n")
-    print(Fore.WHITE + "[*] Target: " + args.range)
-    print(Fore.WHITE + "[*] Method: " + args.method)
+    print(Fore.WHITE + "[*] Selected Range: " + args.range)
+    print(Fore.WHITE + "[*] Protocol: " + args.method)
     print(Fore.WHITE + "[*] Max TTL: " + str(args.max_ttl))
     print(Fore.WHITE + "[*] Threads: " + str(args.threads))
 
@@ -104,7 +116,7 @@ def run_active(args):
     print()
     print("[*] Unique hops found: " + str(len(active.discovered_hops)))
     print("[*] Probes sent: " + str(active.sent) + " across " + str(len(targets)) + " targets")
-    print("[*] Elapsed: " + str(round(elapsed, 1)) + "s " + "(threads=" + str(args.threads) + ", method=" + args.method + ", max_ttl=" + str(args.max_ttl) + ")\n")
+    print("[*] Elapsed: " + str(round(elapsed, 1)) + "s \n")
 
     # generate .dot graph
     if args.out_dot:
@@ -147,6 +159,7 @@ def main():
     parser_active.add_argument("-t", "--threads", type=int, default=30, help="Number of threads, default: 30")
     parser_active.add_argument("--dport", type=int, default=None, help="Destination port for TCP or UDP")
     parser_active.add_argument("--tunnel", action="store_true", help="Use L3RawSocket for tracing in tunnels")
+    parser_active.add_argument("--tunnel-iface", default=None, help="Tunnel interface to source probes from, e.g. ppp0 (required with --tunnel)")
     parser_active.add_argument("--out-dot", default=None, help="Write topology graph to DOT file")
     parser_active.add_argument("--out-subnets", default=None, help="Write suggested subnets to file")
 
@@ -159,6 +172,14 @@ def main():
     parser_passive.add_argument("--timeout", type=int, default=None, help="Traffic sniffing timeout (auto-writes pcap if --output was not specified)")
 
     args = parser.parse_args()
+
+    if args.mode == "active":
+         # --tunnel-iface only makes sense with --tunnel
+        if args.tunnel_iface and not args.tunnel:
+            parser.error(Fore.RED + "[*] --tunnel-iface requires --tunnel")
+        # --tunnel on dev-routed p2p links needs an explicit source iface, otherwise scapy sends with src=0.0.0.0 and nothing comes back
+        if args.tunnel and not args.tunnel_iface:
+            parser.error(Fore.RED + "[*] --tunnel requires --tunnel-iface")
 
     if args.mode == "active":
         run_active(args)

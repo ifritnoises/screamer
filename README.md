@@ -41,6 +41,7 @@ screamer active --help
 | `-t` / `--threads` | Number of the threads (default: 30)                          |
 | `--max-ttl`        | Trace depth in hops (default: 5)                             |
 | `--tunnel`         | Use L3RawSocket for tracing in tunnels                       |
+| `--tunnel-iface`   | Sets the tunnel interface                                    |
 | `--out-dot`        | Save the topology to a DOT file for easy visualization       |
 | `--out-subnets`    | Save the detected subnets to a file                          |
 
