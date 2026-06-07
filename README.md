@@ -20,6 +20,12 @@ Works on Unix-like systems and requires Python 3.7 or later. The tool uses raw s
 sudo pipx install --global git+https://github.com/ifritnoises/screamer
 ```
 
+## Arch Linux [(AUR)](https://aur.archlinux.org/packages/screamer)
+
+```bash
+yay -S screamer
+```
+
 # Active Reconnaissance
 
 Active mode sends packets with incrementally increasing TTL values across a specified range and maps the network: which hops exist and which subnets they connect to.
