@@ -26,6 +26,12 @@ sudo pipx install --global git+https://github.com/ifritnoises/screamer
 yay -S screamer
 ```
 
+## BlackArch
+
+```bash
+sudo pacman -S screamer
+```
+
 # Active Reconnaissance
 
 Active mode sends packets with incrementally increasing TTL values across a specified range and maps the network: which hops exist and which subnets they connect to.
